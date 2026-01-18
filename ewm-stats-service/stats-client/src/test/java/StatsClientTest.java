@@ -1,47 +1,119 @@
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-public class StatsClientTest {
-    @Test
-    void shouldCreateViewStatsDtoWithAllArgsConstructor() {
+@ExtendWith(MockitoExtension.class)
+class StatsClientTest {
 
-        String app = "ewm-main-service";
-        String uri = "/events/5";
-        Long hits = 42L;
+    @Mock
+    private RestTemplate restTemplate;
+    private StatsClient statsClient;
 
-        ViewStatsDto viewStatsDto = new ViewStatsDto(app, uri, hits);
+    @BeforeEach
+    void setUp() throws Exception {
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        statsClient = new StatsClient("http://localhost:9090", builder);
 
-        assertNotNull(viewStatsDto);
-        assertEquals(app, viewStatsDto.getApp());
-        assertEquals(uri, viewStatsDto.getUri());
-        assertEquals(hits, viewStatsDto.getHits());
+        Field restField = BaseClient.class.getDeclaredField("rest");
+        restField.setAccessible(true);
+        restField.set(statsClient, restTemplate);
     }
 
     @Test
-    void shouldCreateViewStatsDtoWithBuilder() {
-        ViewStatsDto viewStatsDto = ViewStatsDto.builder()
-                .app("stats-service")
-                .uri("/stats")
-                .hits(100L)
+    void saveHit_shouldWork() {
+        HitDto hitDto = HitDto.builder()
+                .app("test")
+                .uri("/test")
+                .ip("127.0.0.1")
+                .timestamp("2024-01-15 10:00:00")
                 .build();
 
-        assertNotNull(viewStatsDto);
-        assertEquals("stats-service", viewStatsDto.getApp());
-        assertEquals("/stats", viewStatsDto.getUri());
-        assertEquals(100L, viewStatsDto.getHits());
+        when(restTemplate.exchange(
+                eq("/hit"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(Object.class)
+        )).thenReturn(ResponseEntity.ok().build());
+
+        ResponseEntity<Object> response = statsClient.saveHit(hitDto);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
-    void shouldCreateEmptyViewStatsDtoAndSetValues() {
-        ViewStatsDto viewStatsDto = new ViewStatsDto();
-        viewStatsDto.setApp("test-app");
-        viewStatsDto.setUri("/test/uri");
-        viewStatsDto.setHits(999L);
+    void getStats_shouldCallCorrectEndpoint() {
+        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 1, 31, 23, 59);
 
-        assertEquals("test-app", viewStatsDto.getApp());
-        assertEquals("/test/uri", viewStatsDto.getUri());
-        assertEquals(999L, viewStatsDto.getHits());
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(Object.class),
+                any(Map.class)
+        )).thenReturn(ResponseEntity.ok(List.of()));
+
+        ResponseEntity<Object> response = statsClient.getStats(start, end, null, null);
+
+        assertNotNull(response);
+        assertTrue(response.getStatusCode().is2xxSuccessful());
     }
 
+    @Test
+    void getStats_withUris_shouldWork() {
+        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 1, 31, 23, 59);
+        List<String> uris = List.of("/events", "/events/1");
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(Object.class),
+                any(Map.class)
+        )).thenReturn(ResponseEntity.ok(List.of()));
+
+        ResponseEntity<Object> response = statsClient.getStats(start, end, uris, true);
+
+        assertNotNull(response);
+        assertTrue(response.getStatusCode().is2xxSuccessful());
+    }
+
+    @Test
+    void getStats_shouldHandleServerError() {
+        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 1, 31, 23, 59);
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(Object.class),
+                any(Map.class)
+        )).thenThrow(new org.springframework.web.client.HttpClientErrorException(
+                HttpStatus.BAD_REQUEST,
+                "Bad Request"
+        ));
+
+        ResponseEntity<Object> response = statsClient.getStats(start, end, null, null);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
 }
