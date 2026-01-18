@@ -1,7 +1,6 @@
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# копируем весь репозиторий и собираем нужный модуль
 COPY . .
 RUN mvn -pl ewm-stats-service/stats-server -am -DskipTests package
 

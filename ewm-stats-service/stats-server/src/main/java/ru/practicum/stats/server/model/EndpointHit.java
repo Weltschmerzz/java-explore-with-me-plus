@@ -1,6 +1,7 @@
 package ru.practicum.stats.server.model;
 
 import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

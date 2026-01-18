@@ -1,7 +1,6 @@
 package ru.practicum.stats.server.service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
