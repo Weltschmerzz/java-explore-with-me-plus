@@ -1,4 +1,5 @@
 import org.junit.jupiter.api.Test;
+import ru.practicum.stats.dto.EndpointHitDto;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,7 +12,7 @@ class HitDtoTest {
         String ip = "192.168.1.1";
         String timestamp = "2024-01-15 10:00:00";
 
-        HitDto hitDto = new HitDto(app, uri, ip, timestamp);
+        EndpointHitDto hitDto = new EndpointHitDto(app, uri, ip, timestamp);
 
         assertNotNull(hitDto);
         assertEquals(app, hitDto.getApp());
@@ -22,7 +23,7 @@ class HitDtoTest {
 
     @Test
     void shouldCreateHitDtoWithBuilder() {
-        HitDto hitDto = HitDto.builder()
+        EndpointHitDto hitDto = EndpointHitDto.builder()
                 .app("ewm-main-service")
                 .uri("/events")
                 .ip("121.0.0.1")
@@ -38,7 +39,7 @@ class HitDtoTest {
 
     @Test
     void shouldCreateHitDtoWithNoArgsConstructorAndSetters() {
-        HitDto hitDto = new HitDto();
+        EndpointHitDto hitDto = new EndpointHitDto();
 
         hitDto.setApp("stats-service");
         hitDto.setUri("/stats");
@@ -53,7 +54,7 @@ class HitDtoTest {
 
     @Test
     void shouldHandleNullValues() {
-        HitDto hitDto = HitDto.builder()
+        EndpointHitDto hitDto = EndpointHitDto.builder()
                 .app(null)
                 .uri(null)
                 .ip(null)
