@@ -12,6 +12,15 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
     <artifactId>ewm-stats-service</artifactId>
     <packaging>pom</packaging>
     <name>EWM Stats Service</name>

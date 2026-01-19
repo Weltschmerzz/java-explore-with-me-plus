@@ -1,14 +1,38 @@
 services:
-  stats-server:
-    ports:
-      - "9090:9090"
+    stats-server:
+      build:
+        context: .
+        dockerfile: ewm-stats-service/stats-server/Dockerfile
+      ports:
+        - "9090:9090"
+      depends_on:
+        - stats-db
+      environment:
+        DB_HOST: stats-db
+        DB_PORT: 5432
+        DB_NAME: stats
+        DB_USER: stats
+        DB_PASSWORD: stats
 
-  stats-db:
-    image: postgres:16.1
 
-  ewm-service:
-    ports:
-      - "8080:8080"
+    stats-db:
+      image: postgres:16.1
+      environment:
+        POSTGRES_DB: stats
+        POSTGRES_USER: stats
+        POSTGRES_PASSWORD: stats
+      ports:
+        - "5432:5432"
 
-  ewm-db:
-    image: postgres:16.1
+    ewm-service:
+      image: alpine:3.20
+      ports:
+        - "8080:8080"
+      command: ["sh", "-c", "echo 'ewm-service stub (stage 1). Will be implemented on stage 2.' && sleep infinity"]
+
+    ewm-db:
+      image: postgres:16.1
+      environment:
+        POSTGRES_DB: ewm
+        POSTGRES_USER: ewm
+        POSTGRES_PASSWORD: ewm
