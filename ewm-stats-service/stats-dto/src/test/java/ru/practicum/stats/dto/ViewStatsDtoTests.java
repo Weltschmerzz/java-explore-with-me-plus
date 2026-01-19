@@ -1,5 +1,6 @@
+package ru.practicum.stats.dto;
+
 import org.junit.jupiter.api.Test;
-import ru.practicum.stats.dto.ViewStatsDto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

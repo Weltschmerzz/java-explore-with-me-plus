@@ -1,5 +1,6 @@
+package ru.practicum.stats.dto;
+
 import org.junit.jupiter.api.Test;
-import ru.practicum.stats.dto.EndpointHitDto;
 
 import static org.junit.jupiter.api.Assertions.*;
 
