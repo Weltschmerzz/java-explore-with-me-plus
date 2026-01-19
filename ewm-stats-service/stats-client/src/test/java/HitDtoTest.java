@@ -66,5 +66,4 @@ class HitDtoTest {
         assertNull(hitDto.getIp());
         assertNull(hitDto.getTimestamp());
     }
-    
 }
