@@ -67,7 +67,7 @@ class StatsControllerTest {
         List<EndpointHit> saved = endpointHitRepository.findAll();
         assertEquals(1, saved.size());
 
-        EndpointHit hit = saved.get(0);
+        EndpointHit hit = saved.getFirst();
         assertNotNull(hit.getId());
         assertEquals("ewm-main-service", hit.getApp());
         assertEquals("/events/1", hit.getUri());
@@ -78,15 +78,15 @@ class StatsControllerTest {
     @Test
     void getStats_shouldAggregateHits_andSupportUnique_andUrisFilter() throws Exception {
         // /events/1 -> 3 hits (2 unique IPs)
-        saveEntity("ewm-main-service", "/events/1", "192.168.1.1",
+        saveEntity("/events/1", "192.168.1.1",
                 LocalDateTime.of(2024, 1, 15, 10, 0));
-        saveEntity("ewm-main-service", "/events/1", "192.168.1.2",
+        saveEntity("/events/1", "192.168.1.2",
                 LocalDateTime.of(2024, 1, 15, 10, 5));
-        saveEntity("ewm-main-service", "/events/1", "192.168.1.1",
+        saveEntity("/events/1", "192.168.1.1",
                 LocalDateTime.of(2024, 1, 15, 10, 10));
 
         // /events/2 -> 1 hit
-        saveEntity("ewm-main-service", "/events/2", "192.168.1.1",
+        saveEntity("/events/2", "192.168.1.1",
                 LocalDateTime.of(2024, 1, 15, 10, 10));
 
         // Non-unique: must return both URIs ordered by hits desc
@@ -122,12 +122,14 @@ class StatsControllerTest {
                 .andExpect(jsonPath("$[0].hits", is(1)));
     }
 
-    private void saveEntity(String app, String uri, String ip, LocalDateTime hitTime) {
+    private void saveEntity(String uri, String ip, LocalDateTime hitTime) {
         EndpointHit hit = new EndpointHit();
-        hit.setApp(app);
+        hit.setApp("ewm-main-service");
         hit.setUri(uri);
         hit.setIp(ip);
         hit.setHitTime(hitTime);
         endpointHitRepository.save(hit);
     }
 }
+
+
