@@ -1,0 +1,75 @@
+package ru.practicum.ewm.exception;
+
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+@RestControllerAdvice
+public class ErrorHandler {
+
+    private static final DateTimeFormatter TS_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private ApiError build(HttpStatus status, String reason, String message, List<String> errors) {
+        return ApiError.builder()
+                .status(status.toString())
+                .reason(reason)
+                .message(message)
+                .errors(errors == null ? List.of() : errors)
+                .timestamp(LocalDateTime.now().format(TS_FORMAT))
+                .build();
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ApiError handleNotFound(NotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, "The required object was not found.", ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ApiError handleConflict(ConflictException ex) {
+        return build(HttpStatus.CONFLICT, "For the requested operation the conditions are not met.", ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ApiError handleForbidden(ForbiddenException ex) {
+        return build(HttpStatus.FORBIDDEN, "For the requested operation the conditions are not met.", ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler({
+            MethodArgumentNotValidException.class,
+            ConstraintViolationException.class,
+            HttpMessageNotReadableException.class
+    })
+    public ApiError handleBadRequest(Exception ex) {
+        if (ex instanceof MethodArgumentNotValidException manv) {
+            List<String> errors = manv.getBindingResult().getFieldErrors().stream()
+                    .map(this::formatFieldError)
+                    .toList();
+            return build(HttpStatus.BAD_REQUEST, "Incorrectly made request.", "Validation failed", errors);
+        }
+        return build(HttpStatus.BAD_REQUEST, "Incorrectly made request.", ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ApiError handleDbConflict(DataIntegrityViolationException ex) {
+        return build(HttpStatus.CONFLICT, "For the requested operation the conditions are not met.", "Data integrity violation", List.of());
+    }
+
+    @ExceptionHandler(Throwable.class)
+    public ApiError handleOther(Throwable ex) {
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error.", ex.getMessage(), List.of());
+    }
+
+    private String formatFieldError(FieldError fe) {
+        return fe.getField() + ": " + fe.getDefaultMessage();
+    }
+}

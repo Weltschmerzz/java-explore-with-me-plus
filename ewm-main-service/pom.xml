@@ -16,4 +16,17 @@
     <packaging>pom</packaging>
     <name>EWM Main Service</name>
 
+    <modules>
+        <module>main-server</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
 </project>
