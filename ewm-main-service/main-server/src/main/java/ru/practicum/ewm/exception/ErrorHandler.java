@@ -7,6 +7,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
@@ -30,11 +31,13 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleNotFound(NotFoundException ex) {
         return build(HttpStatus.NOT_FOUND, "The required object was not found.", ex.getMessage(), List.of());
     }
 
     @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflict(ConflictException ex) {
         return build(HttpStatus.CONFLICT, "For the requested operation the conditions are not met.", ex.getMessage(), List.of());
     }
