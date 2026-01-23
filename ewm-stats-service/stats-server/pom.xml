@@ -13,7 +13,7 @@
     </parent>
 
     <artifactId>stats-server</artifactId>
-    <name>Stats Server</name>
+    <name>EWM Stats Server</name>
 
     <dependencies>
         <dependency>
