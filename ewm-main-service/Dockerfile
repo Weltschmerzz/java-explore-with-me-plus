@@ -1,7 +1,7 @@
 # =========================
 # 1. BUILD STAGE
 # =========================
-FROM eclipse-temurin:21-jdk AS builder
+FROM maven:3.9.9-eclipse-temurin-21 AS builder
 
 WORKDIR /build
 
@@ -11,6 +11,9 @@ COPY pom.xml .
 # Копируем pom'ы модулей
 COPY ewm-main-service/pom.xml ewm-main-service/pom.xml
 COPY ewm-stats-service/pom.xml ewm-stats-service/pom.xml
+
+# Скачиваем зависимости (кеш)
+RUN mvn -B -pl ewm-main-service -am dependency:go-offline
 
 # Копируем исходники main-service
 COPY ewm-main-service/src ewm-main-service/src
@@ -25,7 +28,9 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# Копируем свежесобранный JAR
+# Копируем JAR
 COPY --from=builder /build/ewm-main-service/target/*.jar app.jar
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
