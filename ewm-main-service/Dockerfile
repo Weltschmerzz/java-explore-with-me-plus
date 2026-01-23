@@ -5,20 +5,13 @@ FROM maven:3.9.9-eclipse-temurin-21 AS builder
 
 WORKDIR /build
 
-# Копируем parent pom
-COPY pom.xml .
+# Копируем весь проект (обязательно для multi-module)
+COPY . .
 
-# Копируем pom'ы модулей
-COPY ewm-main-service/pom.xml ewm-main-service/pom.xml
-COPY ewm-stats-service/pom.xml ewm-stats-service/pom.xml
-
-# Скачиваем зависимости (кеш)
+# Кешируем зависимости
 RUN mvn -B -pl ewm-main-service -am dependency:go-offline
 
-# Копируем исходники main-service
-COPY ewm-main-service/src ewm-main-service/src
-
-# Собираем ТОЛЬКО main-service
+# Собираем только main-service
 RUN mvn -pl ewm-main-service -am clean package -DskipTests
 
 # =========================
