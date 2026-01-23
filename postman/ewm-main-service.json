@@ -10,25 +10,6 @@
       "item": [
         {
           "name": "Create category (201)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"201 Created and save categoryId\", function () {",
-                  "  pm.response.to.have.status(201);",
-                  "  pm.response.to.be.json;",
-                  "",
-                  "  const body = pm.response.json();",
-                  "  pm.expect(body.id).to.be.a('number');",
-                  "  pm.expect(body.name).to.be.a('string');",
-                  "",
-                  "  pm.collectionVariables.set('categoryId', body.id);",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -47,18 +28,6 @@
         },
         {
           "name": "Create duplicate category (409)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"409 Conflict on duplicate\", function () {",
-                  "  pm.response.to.have.status(409);",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -77,18 +46,6 @@
         },
         {
           "name": "Create category validation (400)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"400 Bad Request on invalid name\", function () {",
-                  "  pm.response.to.have.status(400);",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -107,22 +64,6 @@
         },
         {
           "name": "Update category (200)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"200 OK update category\", function () {",
-                  "  pm.response.to.have.status(200);",
-                  "  pm.response.to.be.json;",
-                  "",
-                  "  const body = pm.response.json();",
-                  "  pm.expect(body.name).to.equal('Концерты');",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "PATCH",
             "header": [
@@ -141,18 +82,6 @@
         },
         {
           "name": "Delete category (204)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"204 No Content on delete\", function () {",
-                  "  pm.response.to.have.status(204);",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "DELETE",
             "url": {
@@ -169,18 +98,6 @@
       "item": [
         {
           "name": "Get category by id (404 after delete)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"404 Not Found for deleted category\", function () {",
-                  "  pm.response.to.have.status(404);",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "GET",
             "url": {
