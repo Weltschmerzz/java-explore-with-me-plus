@@ -13,6 +13,7 @@ import ru.practicum.ewm.events.model.*;
 import ru.practicum.ewm.events.repository.EventRepository;
 import ru.practicum.ewm.events.repository.EventSpecifications;
 import ru.practicum.ewm.events.repository.ParticipationRequestRepository;
+import ru.practicum.ewm.exception.BadRequestException;
 import ru.practicum.ewm.events.util.DateTimeUtil;
 import ru.practicum.ewm.events.util.OffsetBasedPageRequest;
 
@@ -67,7 +68,7 @@ public class EventServiceImpl implements EventService {
         }
 
         if (end != null && start != null && end.isBefore(start)) {
-            throw new ConflictException("rangeEnd must not be before rangeStart");
+            throw new BadRequestException("Дата окончания не может быть раньше даты начала!");
         }
 
         Specification<Event> spec = Specification.where(EventSpecifications.stateIn(List.of(EventState.PUBLISHED)))
@@ -79,7 +80,6 @@ public class EventServiceImpl implements EventService {
                 .and(EventSpecifications.onlyAvailable(onlyAvailable));
 
         if (sort == PublicEventSort.VIEWS) {
-            // корректная сортировка по views: берём всех, считаем views, сортируем в памяти, режем offset/limit
             List<Event> all = eventRepository.findAll(spec);
             List<EventShortDto> mapped = toShortDtosWithMeta(all);
             mapped.sort(
@@ -104,7 +104,7 @@ public class EventServiceImpl implements EventService {
 
         Event event = eventRepository.findById(id)
                 .filter(e -> e.getState() == EventState.PUBLISHED)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Событие в id= " + id + " не найдено!"));
 
         return toFullDtoWithMeta(event);
     }
@@ -128,14 +128,14 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventFullDto addEvent(long userId, NewEventDto dto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден!"));
 
         Category category = categoryRepository.findById(dto.getCategory())
-                .orElseThrow(() -> new NotFoundException("Category with id=" + dto.getCategory() + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Категория с id=" + userId + " не найдена!"));
 
         // правило Swagger: не раньше чем через 2 часа
         if (dto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Event date must be at least 2 hours from now");
+            throw new BadRequestException("До даты события должно оставаться не менее 2 часов!");
         }
 
         Event e = new Event();
@@ -168,10 +168,10 @@ public class EventServiceImpl implements EventService {
         ensureUserExists(userId);
 
         Event e = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Событие с id=" + userId + " не найдено!"));
 
         if (!Objects.equals(e.getInitiator().getId(), userId)) {
-            throw new NotFoundException("Event with id=" + eventId + " was not found");
+            throw new NotFoundException("Событие с id=" + userId + " не найдено!");
         }
 
         return toFullDtoWithMeta(e);
@@ -183,20 +183,20 @@ public class EventServiceImpl implements EventService {
         ensureUserExists(userId);
 
         Event e = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Событие с id=" + userId + " не найдено!"));
 
         if (!Objects.equals(e.getInitiator().getId(), userId)) {
-            throw new NotFoundException("Event with id=" + eventId + " was not found");
+            throw new NotFoundException("Событие с id=" + userId + " не найдено!");
         }
 
         // правило Swagger: менять можно только CANCELED или PENDING
         if (!(e.getState() == EventState.PENDING || e.getState() == EventState.CANCELED)) {
-            throw new ConflictException("Only pending or canceled events can be changed");
+            throw new ConflictException("Допускается изменение событий, находящихся в статусе pending или canceled.");
         }
 
         // правило Swagger: дата не раньше +2 часа
         if (dto.getEventDate() != null && dto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Event date must be at least 2 hours from now");
+            throw new BadRequestException("До даты события должно оставаться не менее 2 часов");
         }
 
         applyUserUpdate(e, dto);
@@ -209,10 +209,10 @@ public class EventServiceImpl implements EventService {
         ensureUserExists(userId);
 
         Event e = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Событие с id=" + userId + " не найдено!"));
 
         if (!Objects.equals(e.getInitiator().getId(), userId)) {
-            throw new NotFoundException("Event with id=" + eventId + " was not found");
+            throw new NotFoundException("Событие с id=" + userId + " не найдено!");
         }
 
         return requestRepository.findAllByEvent_IdOrderByIdAsc(eventId)
@@ -227,23 +227,23 @@ public class EventServiceImpl implements EventService {
         ensureUserExists(userId);
 
         Event e = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Событие с id=" + userId + " не найдено!"));
 
         if (!Objects.equals(e.getInitiator().getId(), userId)) {
-            throw new NotFoundException("Event with id=" + eventId + " was not found");
+            throw new NotFoundException("Событие с id=" + userId + " не найдено!");
         }
 
         List<ParticipationRequest> requests = requestRepository.findAllByIdIn(dto.getRequestIds());
         if (requests.size() != dto.getRequestIds().size()) {
-            throw new NotFoundException("Some requests were not found");
+            throw new NotFoundException("Не все запросы были найдены.");
         }
 
         for (ParticipationRequest r : requests) {
             if (!Objects.equals(r.getEvent().getId(), eventId)) {
-                throw new ConflictException("Request does not belong to event");
+                throw new ConflictException("Запрос не принадлежит указанному событию!");
             }
             if (r.getStatus() != RequestStatus.PENDING) {
-                throw new ConflictException("Status can be changed only for PENDING requests");
+                throw new ConflictException("Изменение статуса допускается исключительно для запросов в статусе PENDING!");
             }
         }
 
@@ -270,7 +270,7 @@ public class EventServiceImpl implements EventService {
         if (dto.getStatus() == RequestUpdateStatus.CONFIRMED) {
             for (ParticipationRequest r : requests) {
                 if (confirmed >= limit) {
-                    throw new ConflictException("Participant limit has been reached");
+                    throw new ConflictException("Превышено допустимое количество участников!");
                 }
                 r.setStatus(RequestStatus.CONFIRMED);
                 confirmed++;
@@ -329,8 +329,12 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventFullDto updateAdmin(long eventId, UpdateEventAdminRequest dto) {
         Event e = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено!"));
         applyAdminUpdate(e, dto);
+
+        if (dto.getEventDate() != null && dto.getEventDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Дата событие не может быть в прошлом!");
+        }
 
         return toFullDtoWithMeta(eventRepository.save(e));
     }
@@ -339,7 +343,7 @@ public class EventServiceImpl implements EventService {
 
     private void ensureUserExists(long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User with id=" + userId + " was not found");
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден!");
         }
     }
 
@@ -355,7 +359,7 @@ public class EventServiceImpl implements EventService {
 
         if (dto.getCategory() != null) {
             Category category = categoryRepository.findById(dto.getCategory())
-                    .orElseThrow(() -> new NotFoundException("Category with id=" + dto.getCategory() + " was not found"));
+                    .orElseThrow(() -> new NotFoundException("Категория с id=" + dto.getCategory() + " не найдена!"));
             e.setCategory(category);
         }
 
@@ -380,7 +384,7 @@ public class EventServiceImpl implements EventService {
 
         if (dto.getCategory() != null) {
             Category category = categoryRepository.findById(dto.getCategory())
-                    .orElseThrow(() -> new NotFoundException("Category with id=" + dto.getCategory() + " was not found"));
+                    .orElseThrow(() -> new NotFoundException("Категория с id=" + dto.getCategory() + " не найдена!"));
             e.setCategory(category);
         }
 
@@ -388,18 +392,18 @@ public class EventServiceImpl implements EventService {
             if (dto.getStateAction() == AdminStateAction.PUBLISH_EVENT) {
 
                 if (e.getState() != EventState.PENDING) {
-                    throw new ConflictException("Event can be published only if it is in PENDING state");
+                    throw new ConflictException("Статус события должен быть PENDING для его публикации!");
                 }
 
                 if (e.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
-                    throw new ConflictException("Event date must be at least 1 hour from now to publish");
+                    throw new ConflictException("Опубликовать событие можно, только если до его даты остаётся не менее 1 часа.");
                 }
                 e.setState(EventState.PUBLISHED);
                 e.setPublishedOn(LocalDateTime.now());
             } else if (dto.getStateAction() == AdminStateAction.REJECT_EVENT) {
 
                 if (e.getState() == EventState.PUBLISHED) {
-                    throw new ConflictException("Event can be rejected only if it is not published");
+                    throw new ConflictException("Отклонить событие разрешается только до его публикации.");
                 }
                 e.setState(EventState.CANCELED);
             }

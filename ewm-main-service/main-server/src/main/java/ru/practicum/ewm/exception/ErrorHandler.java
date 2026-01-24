@@ -35,19 +35,19 @@ public class ErrorHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleNotFound(NotFoundException ex) {
-        return build(HttpStatus.NOT_FOUND, "The required object was not found.", ex.getMessage(), List.of());
+        return build(HttpStatus.NOT_FOUND, "Запрашиваемый объект не найден", ex.getMessage(), List.of());
     }
 
     @ExceptionHandler(ConflictException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflict(ConflictException ex) {
-        return build(HttpStatus.CONFLICT, "For the requested operation the conditions are not met.", ex.getMessage(), List.of());
+        return build(HttpStatus.CONFLICT, "Для выполнения запрошенной операции условия не соблюдены", ex.getMessage(), List.of());
     }
 
     @ExceptionHandler(ForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ApiError handleForbidden(ForbiddenException ex) {
-        return build(HttpStatus.FORBIDDEN, "For the requested operation the conditions are not met.", ex.getMessage(), List.of());
+        return build(HttpStatus.FORBIDDEN, "Для выполнения запрошенной операции условия не соблюдены", ex.getMessage(), List.of());
     }
 
     @ExceptionHandler({
@@ -64,25 +64,32 @@ public class ErrorHandler {
             List<String> errors = manv.getBindingResult().getFieldErrors().stream()
                     .map(this::formatFieldError)
                     .toList();
-            return build(HttpStatus.BAD_REQUEST, "Incorrectly made request.", "Validation failed", errors);
+            return build(HttpStatus.BAD_REQUEST, "Получен некорректный запрос", "Ошибка валидации", errors);
         }
-        return build(HttpStatus.BAD_REQUEST, "Incorrectly made request.", ex.getMessage(), List.of());
+        return build(HttpStatus.BAD_REQUEST, "Получен некорректный запрос", ex.getMessage(), List.of());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleDbConflict(DataIntegrityViolationException ex) {
-        return build(HttpStatus.CONFLICT, "For the requested operation the conditions are not met.",
-                "Data integrity violation", List.of());
+        return build(HttpStatus.CONFLICT, "Для выполнения запрошенной операции условия не соблюдены",
+                "Нарушение целостности данных", List.of());
     }
 
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleOther(Throwable ex) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error.", ex.getMessage(), List.of());
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Непредвиденная ошибка", ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleBadRequest(BadRequestException ex) {
+        return build(HttpStatus.BAD_REQUEST, "Получен некорректный запрос", ex.getMessage(), List.of());
     }
 
     private String formatFieldError(FieldError fe) {
         return fe.getField() + ": " + fe.getDefaultMessage();
     }
 }
+

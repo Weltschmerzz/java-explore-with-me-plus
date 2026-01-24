@@ -46,7 +46,7 @@ public class StatsFacade {
         if (uris == null || uris.isEmpty()) return Map.of();
 
         try {
-            ResponseEntity<Object> resp = statsClient.getStats(STATS_START, LocalDateTime.now(), uris, false);
+            ResponseEntity<Object> resp = statsClient.getStats(STATS_START, LocalDateTime.now(), uris, true);
             Object body = resp.getBody();
             if (body == null) return Map.of();
 

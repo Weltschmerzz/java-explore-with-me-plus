@@ -7,8 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
-import ru.practicum.ewm.exception.UserAlreadyExist;
 import ru.practicum.ewm.users.dto.NewUserDto;
 import ru.practicum.ewm.users.dto.UserDto;
 import ru.practicum.ewm.users.mapper.UserMapper;
@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (userRepository.existsByEmail(newUserDto.getEmail())) {
-            throw new UserAlreadyExist("Пользователь уже зарегистрирован");
+            throw new ConflictException("Пользователь уже зарегистрирован");
         }
     }
 }
