@@ -9,8 +9,6 @@ import java.util.List;
 
 public final class EventSpecifications {
 
-    private EventSpecifications() {}
-
     public static Specification<Event> stateIn(List<EventState> states) {
         return (root, query, cb) -> {
             if (states == null || states.isEmpty()) return cb.conjunction();
@@ -54,11 +52,10 @@ public final class EventSpecifications {
         };
     }
 
-    /**
-     * onlyAvailable=true:
-     *  - participantLimit == 0  => доступно всегда
-     *  - иначе confirmedRequests < participantLimit
-     */
+
+//onlyAvailable=true:
+//participantLimit == 0  => доступно всегда
+//иначе confirmedRequests < participantLimit
     public static Specification<Event> onlyAvailable(Boolean onlyAvailable) {
         return (root, query, cb) -> {
             if (onlyAvailable == null || !onlyAvailable) return cb.conjunction();

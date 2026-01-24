@@ -6,8 +6,6 @@ import ru.practicum.ewm.events.model.GeoLocation;
 
 public final class EventMapper {
 
-    private EventMapper() {}
-
     public static Location toDto(GeoLocation loc) {
         Location dto = new Location();
         dto.setLat(loc.getLat());
@@ -20,14 +18,6 @@ public final class EventMapper {
         emb.setLat(dto.getLat());
         emb.setLon(dto.getLon());
         return emb;
-    }
-
-    public static CategoryDto toCategoryDto(Object categoryEntity) {
-        throw new UnsupportedOperationException("Use service mapping for CategoryDto");
-    }
-
-    public static UserShortDto toUserShortDto(Object userEntity) {
-        throw new UnsupportedOperationException("Use service mapping for UserShortDto");
     }
 
     public static EventShortDto toShortDto(Event e) {

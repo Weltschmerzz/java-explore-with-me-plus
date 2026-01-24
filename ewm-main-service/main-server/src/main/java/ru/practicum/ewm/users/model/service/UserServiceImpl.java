@@ -1,4 +1,4 @@
-package ru.practicum.ewm.users.service;
+package ru.practicum.ewm.users.model.service;
 
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;

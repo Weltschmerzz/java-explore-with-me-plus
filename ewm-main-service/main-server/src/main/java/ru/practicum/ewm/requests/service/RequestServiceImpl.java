@@ -32,31 +32,27 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public ru.practicum.ewm.events.dto.ParticipationRequestDto addParticipationRequest(long userId, long eventId) {
         User requester = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден!"));
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено!"));
 
-        // Нельзя отправлять запрос на участие в собственном событии
         if (Objects.equals(event.getInitiator().getId(), userId)) {
-            throw new ConflictException("Initiator can't request participation in own event");
+            throw new ConflictException("Инициатор мероприятия не может выступать в роли участника!");
         }
 
-        // Событие должно быть опубликовано
         if (event.getState() != EventState.PUBLISHED) {
-            throw new ConflictException("Only published events can be requested");
+            throw new ConflictException("Подача запросов допускается только для опубликованных событий.");
         }
 
-        // Нельзя создавать дубликат запроса
         if (requestRepository.existsByEvent_IdAndRequester_Id(eventId, userId)) {
-            throw new ConflictException("Participation request already exists");
+            throw new ConflictException("Запрос на участие уже был отправлен.");
         }
 
-        // Проверка лимита (если лимит == 0, то ограничений нет)
         if (event.getParticipantLimit() > 0) {
             long confirmed = requestRepository.countByEvent_IdAndStatus(eventId, RequestStatus.CONFIRMED);
             if (confirmed >= event.getParticipantLimit()) {
-                throw new ConflictException("Participant limit has been reached");
+                throw new ConflictException("Превышен лимит по числу участников!");
             }
         }
 
@@ -80,7 +76,7 @@ public class RequestServiceImpl implements RequestService {
     @Transactional(readOnly = true)
     public List<ru.practicum.ewm.events.dto.ParticipationRequestDto> getUserRequests(long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User with id=" + userId + " was not found");
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден!");
         }
 
         return requestRepository.findAllByRequester_IdOrderByIdAsc(userId)
@@ -93,11 +89,11 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public ru.practicum.ewm.events.dto.ParticipationRequestDto cancelRequest(long userId, long requestId) {
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User with id=" + userId + " was not found");
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден!");
         }
 
         ParticipationRequest pr = requestRepository.findByIdAndRequester_Id(requestId, userId)
-                .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Запрос с id=" + requestId + " не найден!"));
 
         pr.setStatus(RequestStatus.CANCELED);
         ParticipationRequest saved = requestRepository.save(pr);

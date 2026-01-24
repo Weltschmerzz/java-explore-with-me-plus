@@ -18,10 +18,9 @@ public class UserRequestController {
 
     private final RequestService requestService;
 
-    /**
-     * Добавление запроса от текущего пользователя на участие в событии.
-     * /users/{userId}/requests?eventId={eventId}
-     */
+
+//Добавление запроса от текущего пользователя на участие в событии.
+// /users/{userId}/requests?eventId={eventId}
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto addParticipationRequest(@PathVariable long userId,
@@ -29,17 +28,16 @@ public class UserRequestController {
         return requestService.addParticipationRequest(userId, eventId);
     }
 
-    /**
-     * Получение информации о заявках текущего пользователя на участие в чужих событиях.
-     */
+
+//Получение информации о заявках текущего пользователя на участие в чужих событиях.
+
     @GetMapping
     public List<ParticipationRequestDto> getUserRequests(@PathVariable long userId) {
         return requestService.getUserRequests(userId);
     }
 
-    /**
-     * Отмена своего запроса на участие в событии.
-     */
+
+//Отмена своего запроса на участие в событии.
     @PatchMapping("/{requestId}/cancel")
     public ParticipationRequestDto cancelRequest(@PathVariable long userId,
                                                  @PathVariable long requestId) {

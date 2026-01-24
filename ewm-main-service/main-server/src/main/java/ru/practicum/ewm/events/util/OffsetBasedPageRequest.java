@@ -24,10 +24,6 @@ public class OffsetBasedPageRequest implements Pageable, Serializable {
         this.sort = sort == null ? Sort.unsorted() : sort;
     }
 
-    public OffsetBasedPageRequest(long offset, int limit) {
-        this(offset, limit, Sort.unsorted());
-    }
-
     @Override
     public int getPageNumber() {
         return (int) (offset / limit);
