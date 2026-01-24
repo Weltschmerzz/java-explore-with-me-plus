@@ -40,7 +40,7 @@ public class EventServiceImpl implements EventService {
 
     private final StatsFacade statsFacade;
 
-    // -------------------- PUBLIC --------------------
+    //PUBLIC
 
     @Override
     public List<EventShortDto> getPublicEvents(String text,
@@ -109,7 +109,7 @@ public class EventServiceImpl implements EventService {
         return toFullDtoWithMeta(event);
     }
 
-    // -------------------- PRIVATE --------------------
+    //PRIVATE
 
     @Override
     public List<EventShortDto> getUserEvents(long userId, int from, int size) {
@@ -299,7 +299,7 @@ public class EventServiceImpl implements EventService {
         return result;
     }
 
-    // -------------------- ADMIN --------------------
+    //ADMIN
 
     @Override
     public List<EventFullDto> searchAdmin(List<Long> users,
@@ -335,7 +335,7 @@ public class EventServiceImpl implements EventService {
         return toFullDtoWithMeta(eventRepository.save(e));
     }
 
-    // -------------------- helpers --------------------
+    //helpers
 
     private void ensureUserExists(long userId) {
         if (!userRepository.existsById(userId)) {

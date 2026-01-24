@@ -5,7 +5,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -43,6 +45,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     public ApiError handleForbidden(ForbiddenException ex) {
         return build(HttpStatus.FORBIDDEN, "For the requested operation the conditions are not met.", ex.getMessage(), List.of());
     }
@@ -50,8 +53,12 @@ public class ErrorHandler {
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
             ConstraintViolationException.class,
-            HttpMessageNotReadableException.class
+            HttpMessageNotReadableException.class,
+            MissingServletRequestParameterException.class,
+            MethodArgumentTypeMismatchException.class,
+            IllegalArgumentException.class
     })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleBadRequest(Exception ex) {
         if (ex instanceof MethodArgumentNotValidException manv) {
             List<String> errors = manv.getBindingResult().getFieldErrors().stream()
@@ -63,11 +70,14 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleDbConflict(DataIntegrityViolationException ex) {
-        return build(HttpStatus.CONFLICT, "For the requested operation the conditions are not met.", "Data integrity violation", List.of());
+        return build(HttpStatus.CONFLICT, "For the requested operation the conditions are not met.",
+                "Data integrity violation", List.of());
     }
 
     @ExceptionHandler(Throwable.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleOther(Throwable ex) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error.", ex.getMessage(), List.of());
     }
