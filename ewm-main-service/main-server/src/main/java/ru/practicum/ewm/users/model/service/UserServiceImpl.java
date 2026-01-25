@@ -1,4 +1,4 @@
-package ru.practicum.ewm.users.service;
+package ru.practicum.ewm.users.model.service;
 
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
@@ -7,12 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
-import ru.practicum.ewm.exception.UserAlreadyExist;
 import ru.practicum.ewm.users.dto.NewUserDto;
 import ru.practicum.ewm.users.dto.UserDto;
 import ru.practicum.ewm.users.mapper.UserMapper;
-import ru.practicum.ewm.users.model.UserEntity;
+import ru.practicum.ewm.users.model.User;
 import ru.practicum.ewm.users.repository.UserRepository;
 
 
@@ -33,11 +33,11 @@ public class UserServiceImpl implements UserService {
         int pageNumber = from / size;
         Pageable pageable = PageRequest.of(pageNumber, size);
 
-        List<UserEntity> users;
+        List<User> users;
         if (ids != null && !ids.isEmpty()) {
             users = userRepository.findAllByIdIn(ids, pageable);
         } else {
-            Page<UserEntity> page = userRepository.findAll(pageable);
+            Page<User> page = userRepository.findAll(pageable);
             users = page.getContent();
         }
 
@@ -49,8 +49,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(NewUserDto newUserDto) {
         validateUserCreation(newUserDto);
-        UserEntity userEntity = userMapper.toEntity(newUserDto);
-        UserEntity savedEntity = userRepository.save(userEntity);
+        User userEntity = userMapper.toEntity(newUserDto);
+        User savedEntity = userRepository.save(userEntity);
         return userMapper.toUserDto(savedEntity);
     }
 
@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (userRepository.existsByEmail(newUserDto.getEmail())) {
-            throw new UserAlreadyExist("Пользователь уже зарегистрирован");
+            throw new ConflictException("Пользователь уже зарегистрирован");
         }
     }
 }
