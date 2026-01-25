@@ -11,6 +11,9 @@ public final class EndpointHitMapper {
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    private EndpointHitMapper() {
+    }
+
     public static EndpointHit toEntity(EndpointHitDto dto) {
         EndpointHit hit = new EndpointHit();
         hit.setApp(dto.getApp());
@@ -18,5 +21,15 @@ public final class EndpointHitMapper {
         hit.setIp(dto.getIp());
         hit.setHitTime(LocalDateTime.parse(dto.getTimestamp(), FORMATTER));
         return hit;
+    }
+
+    public static EndpointHitDto toDto(EndpointHit entity) {
+        return EndpointHitDto.builder()
+                .id(entity.getId())
+                .app(entity.getApp())
+                .uri(entity.getUri())
+                .ip(entity.getIp())
+                .timestamp(entity.getHitTime().format(FORMATTER))
+                .build();
     }
 }
