@@ -6,6 +6,9 @@ import ru.practicum.ewm.events.model.GeoLocation;
 
 public final class EventMapper {
 
+    private EventMapper() {
+    }
+
     public static Location toDto(GeoLocation loc) {
         Location dto = new Location();
         dto.setLat(loc.getLat());
