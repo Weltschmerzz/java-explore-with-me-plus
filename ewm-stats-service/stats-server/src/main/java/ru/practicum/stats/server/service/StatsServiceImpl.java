@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.stats.dto.EndpointHitDto;
 import ru.practicum.stats.dto.ViewStatsDto;
 import ru.practicum.stats.server.mapper.EndpointHitMapper;
@@ -29,7 +31,7 @@ public class StatsServiceImpl implements StatsService {
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
 
         if (start.isAfter(end)) {
-            throw new IllegalArgumentException("start должен быть до end!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "start должен быть до end");
         }
 
         boolean hasUris = uris != null && !uris.isEmpty();
