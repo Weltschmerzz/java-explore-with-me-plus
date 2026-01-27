@@ -5,6 +5,9 @@ import ru.practicum.ewm.events.model.ParticipationRequest;
 
 public final class RequestMapper {
 
+    private RequestMapper() {
+    }
+
     public static ParticipationRequestDto toDto(ParticipationRequest r) {
         ParticipationRequestDto dto = new ParticipationRequestDto();
         dto.setId(r.getId());

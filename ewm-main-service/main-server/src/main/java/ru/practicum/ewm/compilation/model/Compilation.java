@@ -1,6 +1,7 @@
 package ru.practicum.ewm.compilation.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
@@ -13,6 +14,7 @@ import java.util.Set;
 @Table(name = "compilations")
 @Getter
 @Setter
+@Builder
 public class Compilation {
 
     @Id
@@ -34,4 +36,8 @@ public class Compilation {
     @OrderBy("id ASC")
     @BatchSize(size = 50)
     private Set<Event> events = new LinkedHashSet<>();
+
+    public Compilation() {
+
+    }
 }

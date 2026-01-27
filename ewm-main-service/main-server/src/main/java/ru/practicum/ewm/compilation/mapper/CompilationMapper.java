@@ -8,6 +8,9 @@ import java.util.List;
 
 public final class CompilationMapper {
 
+    private CompilationMapper() {
+    }
+
     public static CompilationDto toDto(Compilation c, List<EventShortDto> events) {
         return CompilationDto.builder()
                 .id(c.getId())

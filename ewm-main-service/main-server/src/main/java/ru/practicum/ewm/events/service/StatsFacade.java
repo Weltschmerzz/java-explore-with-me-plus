@@ -23,10 +23,10 @@ public class StatsFacade {
 
     private static final String APP = "ewm-main-service";
     private static final LocalDateTime STATS_START = LocalDateTime.of(1970, 1, 1, 0, 0);
+    private static final String FALLBACK_TEST_IP = "121.0.0.1";
 
     private final StatsClient statsClient;
     private final ObjectMapper objectMapper;
-    private static final String FALLBACK_TEST_IP = "121.0.0.1";
 
     public void hit(HttpServletRequest request) {
         try {
